@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Sorte — Dom Leon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <h1>Jogo da Sorte</h1>
+    <p>Padaria Dom Leon</p>
+    <div class="meta-row" id="topbar-meta"></div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab" data-screen="abertura">Abertura (admin)</button>
+    <button class="tab active" data-screen="vitrine">Prêmios</button>
+    <button class="tab" data-screen="venda">Cartela</button>
+    <button class="tab" data-screen="revelacao">Revelação</button>
+    <button class="tab" data-screen="conferencia">Conferência</button>
+  </nav>
+
+  <main>
+    <section id="abertura" class="screen">
+      <h2 class="screen-title">Abertura de rodada</h2>
+      <p class="screen-sub">Configure a rodada antes de abrir para venda</p>
+      <div id="abertura-aviso"></div>
+      <div class="config-row">
+        <div class="field-group"><label>Quantidade de números</label><input type="number" id="input-qtd" value="24" min="1"></div>
+        <div class="field-group"><label>Valor por número (R$)</label><input type="number" id="input-valor" value="5.00" min="0" step="0.5"></div>
+      </div>
+      <label style="display:block; font-size:.78rem; color:var(--espresso-soft); margin-bottom:8px;">Prêmios da rodada</label>
+      <div id="prize-edit-list"></div>
+      <button class="add-prize-btn" onclick="addPrize()">+ Adicionar prêmio</button>
+      <button class="btn btn-gold" onclick="abrirRodada()">Abrir rodada para venda →</button>
+    </section>
+
+    <section id="vitrine" class="screen active">
+      <div id="vitrine-content"></div>
+    </section>
+
+    <section id="venda" class="screen">
+      <div id="venda-panel" class="venda-panel"></div>
+      <h2 class="screen-title">Venda de números</h2>
+      <div id="venda-content"></div>
+    </section>
+
+    <section id="revelacao" class="screen">
+      <h2 class="screen-title">Revelação</h2>
+      <div class="ticket-search">
+        <input type="text" id="busca-ticket" placeholder="Buscar ticket pelo código (ex: 00231)" maxlength="5">
+        <button class="btn btn-ghost" onclick="buscarTicketManual()">Buscar</button>
+      </div>
+      <div id="revelacao-content"></div>
+    </section>
+
+    <section id="conferencia" class="screen">
+      <h2 class="screen-title">Conferência</h2>
+      <div class="config-row" style="margin-bottom:1.2rem;">
+        <div class="field-group"><label>Rodada</label><select id="conf-rodada-select"></select></div>
+        <div class="field-group"><label>Ticket</label><select id="conf-ticket-select"><option value="" disabled selected>Escolha um ticket</option></select></div>
+      </div>
+      <div id="conferencia-content"></div>
+    </section>
+  </main>
+</div>
+
+<div class="emoji-panel" id="emoji-panel">
+  <div class="emoji-panel-backdrop" onclick="fecharEmojiPanel()"></div>
+  <div class="emoji-panel-box">
+    <p class="emoji-panel-title">Selecionar emoji para favoritos</p>
+    <div class="emoji-panel-scroll">
+      <div id="emoji-panel-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pin-overlay">
+  <div class="modal">
+    <h3>Acesso restrito</h3>
+    <input type="password" id="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-gold" onclick="confirmarPin()">Confirmar</button>
+      <button class="btn btn-ghost" onclick="fecharPinModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
