@@ -204,6 +204,7 @@
   .cert-stamp{ width:46px; height:46px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
   .cert-footer-text{ font-size:.72rem; color:var(--espresso-soft); line-height:1.5; flex:1; }
   .cert-footer-text strong{ color:var(--espresso); font-weight:500; }
+  .cert-close-btn{ position:absolute; top:10px; right:12px; background:rgba(244,239,227,.15); border:none; color:var(--cream); border-radius:50%; width:32px; height:32px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5; line-height:1; }
   .confetti-piece{ position:absolute; top:50%; left:50%; width:7px; height:10px; pointer-events:none; z-index:5;
     animation:confettiFall .9s ease-out forwards; }
   @keyframes confettiFall{ 0%{transform:translate(0,0) rotate(0deg); opacity:1;}
