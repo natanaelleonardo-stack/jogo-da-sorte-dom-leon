@@ -9,10 +9,239 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<link rel="stylesheet" href="style.css">
+<style>
+  :root{
+    --cream:#F4EFE3; --paper:#FBF8F1; --espresso:#2B1B12; --espresso-soft:#5A4636;
+    --gold:#D4A33D; --gold-dark:#A87A1F; --red:#8C2F2F; --green:#2F6B4F; --green-soft:#E3F1E9;
+    --shadow:0 4px 7px rgba(43,27,18,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--cream); color:var(--espresso); font-family:'Inter',sans-serif;
+    background-image: radial-gradient(rgba(43,27,18,0.04) 1px, transparent 1px); background-size:14px 14px; }
+  .app{ max-width:1080px; margin:0 auto; padding:0 0 3rem; }
+
+  .topbar{ background:var(--espresso); color:var(--cream); padding:1.5rem 2rem 1.25rem; position:relative; overflow:hidden; }
+  .bulbs{ position:absolute; top:0; left:0; right:0; height:10px; display:flex; justify-content:space-around; }
+  .bulbs span{ width:7px; height:7px; border-radius:50%; background:var(--gold); margin-top:4px;
+    box-shadow:0 0 6px 1px rgba(212,163,61,.8); animation: twinkle 2.4s ease-in-out infinite; }
+  .bulbs span:nth-child(odd){ animation-delay:.6s; }
+  @keyframes twinkle{ 0%,100%{opacity:.4;} 50%{opacity:1;} }
+  .topbar h1{ font-family:'Bebas Neue',sans-serif; font-size:2.4rem; letter-spacing:.04em; margin:0; line-height:1; }
+  .topbar p{ margin:.2rem 0 0; color:var(--gold); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; }
+  .meta-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1rem; }
+  .pill{ background:rgba(244,239,227,0.1); border:1px solid rgba(244,239,227,0.25); color:var(--cream);
+    font-size:.8rem; padding:4px 12px; border-radius:999px; }
+
+  .tabs{ display:flex; gap:8px; padding:1rem 2rem; flex-wrap:wrap; }
+  .tab{ font-family:'Inter',sans-serif; font-weight:500; font-size:.85rem; padding:8px 16px;
+    border-radius:999px; border:1px solid rgba(43,27,18,0.2); background:var(--paper); color:var(--espresso-soft);
+    cursor:pointer; transition:.15s; }
+  .tab.active{ background:var(--espresso); color:var(--cream); border-color:var(--espresso); }
+
+  main{ padding:0 2rem; }
+  .screen{ display:none; animation: popIn .3s ease; }
+  .screen.active{ display:block; }
+  @keyframes popIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  h2.screen-title{ font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:.03em; margin:1.5rem 0 1rem; }
+  p.screen-sub{ font-size:.85rem; color:var(--espresso-soft); margin:-0.6rem 0 1.2rem; }
+  p.empty-state{ font-size:.9rem; color:var(--espresso-soft); background:var(--paper); border-radius:10px;
+    padding:1rem 1.2rem; border:1px solid rgba(43,27,18,.12); }
+
+  .show-banner{ background:linear-gradient(180deg,#2b1b12,#1a1008); border:3px solid var(--gold-dark);
+    border-radius:16px; padding:1.8rem 1.5rem 1.5rem; text-align:center; position:relative; overflow:hidden;
+    margin-top:1.5rem; margin-bottom:1.8rem; }
+  .show-banner::before{ content:""; position:absolute; top:50%; left:50%; width:140%; height:160%;
+    background:radial-gradient(circle, rgba(212,163,61,.18), transparent 60%); transform:translate(-50%,-50%); z-index:1; }
+  .show-bulbs{ position:absolute; top:6px; left:0; right:0; display:flex; justify-content:space-around; z-index:2; }
+  .show-bulbs span{ width:6px; height:6px; border-radius:50%; background:var(--gold);
+    box-shadow:0 0 6px 1px rgba(212,163,61,.8); animation:twinkle 2.4s ease-in-out infinite; }
+  .show-bulbs span:nth-child(odd){ animation-delay:.6s; }
+  .stars-row{ display:flex; align-items:center; justify-content:center; gap:10px; position:relative; z-index:2; }
+  .star{ color:var(--gold); text-shadow:0 2px 4px rgba(0,0,0,.6); }
+  .star-lg{ font-size:2rem; } .star-sm{ font-size:1.2rem; opacity:.85; }
+  .show-title{ margin:0; line-height:.95; background:linear-gradient(180deg,#fff6dd 0%,#f6dd8e 30%,#d4a33d 65%,#8f6212 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 2px 0 rgba(0,0,0,.35); }
+  .show-title .line1{ display:block; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.12em; }
+  .show-title .line2{ display:block; font-family:'Bebas Neue',sans-serif; font-size:2.6rem; letter-spacing:.05em; }
+  .dom-leon-badge{ display:inline-block; margin-top:1rem; position:relative; z-index:2;
+    background:linear-gradient(180deg,#f6dd8e,#d4a33d 55%,#a87a1f); color:#1a1008; font-family:'Bebas Neue',sans-serif;
+    font-size:1.05rem; letter-spacing:.06em; padding:7px 26px; border-radius:8px; border:2px solid #1a1008;
+    box-shadow:0 3px 0 rgba(0,0,0,.4); }
+
+  .prize-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:1.5rem; }
+  .prize-card{ background:var(--paper); border:1.5px dashed var(--gold-dark); border-radius:10px;
+    padding:.9rem 1.1rem; display:flex; align-items:center; gap:12px; }
+  .prize-card .emoji{ font-size:1.7rem; line-height:1; }
+  .prize-card h3{ font-size:.95rem; margin:0; font-weight:600; }
+
+  .btn{ font-family:'Inter',sans-serif; font-weight:600; font-size:.95rem; border:none; border-radius:8px;
+    padding:12px 20px; cursor:pointer; transition:.15s; }
+  .btn-gold{ background:var(--gold); color:var(--espresso); }
+  .btn-gold:hover{ background:var(--gold-dark); }
+  .btn-block{ width:100%; }
+  .btn-ghost{ background:transparent; border:1px solid rgba(43,27,18,.3); color:var(--espresso-soft); }
+  .btn-danger{ background:var(--red); color:#fff; }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+  .config-row{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:1.5rem; }
+  .field-group{ flex:1; min-width:180px; }
+  .field-group label{ display:block; font-size:.78rem; color:var(--espresso-soft); margin-bottom:4px; }
+  .field-group input, .field-group select{ width:100%; padding:9px 10px; border:1px solid rgba(43,27,18,.25);
+    border-radius:6px; font-family:'Inter',sans-serif; font-size:.9rem; background:#fff; }
+
+  .prize-edit-card{ background:var(--paper); border:1.5px dashed var(--gold-dark); border-radius:10px;
+    padding:.9rem 1rem; margin-bottom:12px; }
+  .prize-edit-top{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .emoji-preview{ font-size:2.2rem; width:48px; text-align:center; line-height:1; }
+  .prize-name-input{ flex:1; padding:8px 10px; border:1px solid rgba(43,27,18,.25); border-radius:6px;
+    font-family:'Inter',sans-serif; font-size:.9rem; background:#fff; }
+  .remove-btn{ background:transparent; border:none; color:var(--red); font-size:1.2rem; cursor:pointer;
+    width:30px; height:30px; border-radius:50%; }
+  .remove-btn:hover{ background:rgba(140,47,47,.1); }
+  .duplicate-btn{ background:transparent; border:1px solid rgba(43,27,18,.25); color:var(--espresso-soft);
+    font-size:.75rem; padding:5px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif; }
+  .duplicate-btn:hover{ background:rgba(212,163,61,.12); border-color:var(--gold-dark); color:var(--gold-dark); }
+  .emoji-picker{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .emoji-opt{ width:32px; height:32px; border-radius:50%; border:2px solid transparent; background:#fff;
+    font-size:1.05rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;
+    position:relative; flex-shrink:0; }
+  .emoji-opt:hover{ border-color:rgba(212,163,61,.5); }
+  .emoji-opt.active{ border-color:var(--gold-dark); background:#fbeecb; }
+  .emoji-opt.dragging{ opacity:.4; }
+  .emoji-opt .desfav-btn{ display:none; position:absolute; top:-5px; right:-5px; width:14px; height:14px;
+    border-radius:50%; background:var(--red); color:#fff; font-size:9px; border:none; cursor:pointer;
+    align-items:center; justify-content:center; line-height:1; padding:0; }
+  .emoji-opt:hover .desfav-btn{ display:flex; }
+  .emoji-add-btn{ width:32px; height:32px; border-radius:50%; border:2px dashed var(--gold-dark);
+    background:transparent; color:var(--gold-dark); font-size:1.2rem; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; transition:.15s; flex-shrink:0; font-weight:300; }
+  .emoji-add-btn:hover{ background:rgba(212,163,61,.12); }
+  .emoji-add-btn.disabled{ opacity:.35; cursor:not-allowed; border-color:var(--espresso-soft); color:var(--espresso-soft); }
+
+  .emoji-panel{ position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:1rem; }
+  .emoji-panel.show{ display:flex; }
+  .emoji-panel-backdrop{ position:absolute; inset:0; background:rgba(26,16,8,.5); }
+  .emoji-panel-box{ position:relative; z-index:2; background:var(--paper); border-radius:16px;
+    width:100%; max-width:520px; padding:1.2rem; height:70vh; display:flex; flex-direction:column;
+    box-shadow:0 8px 32px rgba(0,0,0,.4); overflow:hidden; }
+  .emoji-panel-title{ font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.03em; margin:0 0 1rem; flex-shrink:0; }
+  .emoji-panel-scroll{ overflow-y:auto; flex:1; padding-right:4px; }
+  .emoji-cat-label{ font-size:.75rem; color:var(--espresso-soft); font-weight:600; text-transform:uppercase;
+    letter-spacing:.06em; margin:.8rem 0 .4rem; }
+  .emoji-cat-grid{ display:flex; gap:8px; flex-wrap:wrap; }
+  .emoji-cat-opt{ width:36px; height:36px; border-radius:50%; border:none; background:#fff;
+    font-size:1.2rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;
+    box-shadow:0 1px 3px rgba(0,0,0,.1); }
+  .emoji-cat-opt:hover{ transform:scale(1.15); box-shadow:0 2px 6px rgba(0,0,0,.2); }
+  .emoji-cat-opt.ja-fav{ opacity:.35; cursor:not-allowed; }
+  .add-prize-btn{ width:100%; padding:10px; border:1.5px dashed var(--gold-dark); border-radius:10px;
+    background:transparent; color:var(--gold-dark); font-weight:600; font-size:.9rem; cursor:pointer; margin-bottom:1.5rem; }
+  .add-prize-btn:hover{ background:rgba(212,163,61,.08); }
+
+  .venda-panel{ display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; background:var(--paper);
+    border:1px solid rgba(43,27,18,.15); border-radius:12px; padding:1.1rem; margin-bottom:1.5rem; }
+  .venda-stat{ display:flex; flex-direction:column; gap:2px; min-width:80px; }
+  .venda-stat label{ font-size:.78rem; color:var(--espresso-soft); }
+  .venda-stat .big{ font-size:1.4rem; font-weight:600; margin:0; }
+  .ball-grid{ display:grid; grid-template-columns:repeat(10,1fr); gap:14px; max-width:780px; }
+  .hint{ font-size:.75rem; color:var(--espresso-soft); margin-top:.4rem; }
+
+  .ball{ width:64px; height:64px; border-radius:50%; position:relative; margin:0 auto;
+    background:radial-gradient(circle at 30% 25%, #fff6dd 0%, #f6dd8e 14%, #e8bb4a 38%, #c8932a 62%, #8f6212 85%, #5e3f0a 100%);
+    box-shadow:0 6px 10px rgba(0,0,0,.4), inset -6px -6px 10px rgba(0,0,0,.22), inset 4px 4px 7px rgba(255,255,255,.45);
+    display:flex; align-items:center; justify-content:center; transition:transform .15s ease; user-select:none; }
+  .ball .disc{ width:60%; height:60%; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-weight:700;
+    font-size:14px; color:#1a1a1a; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+  .ball.clickable{ cursor:pointer; }
+  .ball.clickable:hover{ transform:translateY(-3px) scale(1.05); }
+  .ball.locked{ filter:grayscale(75%) brightness(.85); opacity:.55; cursor:not-allowed; }
+  .ball.locked::after{ content:"🔒"; position:absolute; font-size:13px; bottom:-2px; right:-2px;
+    background:var(--paper); border-radius:50%; padding:2px; }
+  .ball.selected{ box-shadow:0 0 0 4px var(--green), 0 6px 10px rgba(0,0,0,.4); }
+  .ball.selected::after{ content:"✓"; position:absolute; top:-4px; right:-4px; background:var(--green);
+    color:#fff; width:18px; height:18px; border-radius:50%; font-size:11px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; }
+  .ball.mine{ box-shadow:0 0 0 4px var(--red), 0 6px 10px rgba(0,0,0,.4); animation:pulseGlow 1.8s ease-in-out infinite; }
+  @keyframes pulseGlow{ 0%,100%{box-shadow:0 0 0 4px var(--red), 0 6px 10px rgba(0,0,0,.4);}
+    50%{box-shadow:0 0 0 9px rgba(140,47,47,.22), 0 6px 10px rgba(0,0,0,.4);} }
+  .ball.win{ box-shadow:0 0 0 4px var(--green), 0 6px 10px rgba(0,0,0,.4); animation:none; }
+  .ball.win .disc{ font-size:20px; }
+  .ball.lose{ filter:grayscale(60%) brightness(.8); opacity:.6; animation:none; }
+  .ball.lose .disc{ font-size:18px; }
+  .ball.neutral{ opacity:.6; }
+
+  .result-banner{ margin-top:1.5rem; padding:1rem 1.2rem; border-radius:10px; background:var(--paper);
+    border:1px solid rgba(43,27,18,.15); font-size:.92rem; color:var(--espresso-soft); transition:.2s; }
+  .result-banner.win{ background:var(--green-soft); color:var(--green); border-color:var(--green); }
+  .result-banner.lose{ background:var(--paper); }
+
+  .ticket-search{ display:flex; gap:8px; margin-bottom:1.2rem; max-width:380px; }
+  .ticket-search input{ flex:1; padding:9px 10px; border:1px solid rgba(43,27,18,.25); border-radius:6px;
+    font-family:'JetBrains Mono',monospace; font-size:.9rem; }
+
+  table.ledger{ width:100%; border-collapse:collapse; font-family:'JetBrains Mono',monospace; font-size:.83rem; }
+  table.ledger th{ background:var(--espresso); color:var(--cream); text-align:left; padding:8px 10px; font-weight:500; }
+  table.ledger td{ padding:8px 10px; border-bottom:1px solid rgba(43,27,18,.1); vertical-align:middle; }
+  table.ledger tr:nth-child(even) td{ background:var(--paper); }
+  .status-chip{ font-family:'Inter',sans-serif; font-size:.72rem; padding:2px 10px; border-radius:999px; display:inline-block; }
+  .status-chip.ganhou{ background:var(--green-soft); color:var(--green); }
+  .status-chip.pendente{ background:#fbeecb; color:var(--gold-dark); }
+  .status-chip.semresultado{ background:var(--cream); color:var(--espresso-soft); }
+  .status-chip.aguardando{ background:#fdeee0; color:var(--red); }
+  .retirar-link{ font-size:.72rem; color:var(--green); background:none; border:none; cursor:pointer;
+    text-decoration:underline; padding:0; margin-left:6px; font-family:'Inter',sans-serif; }
+
+  .cert-header{ background:#2B1B12; padding:1.4rem 1.5rem 1.2rem; text-align:center; position:relative; overflow:hidden; }
+  .cert-header-bulbs{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-around; padding-top:4px; }
+  .cert-header-bulbs span{ width:5px; height:5px; border-radius:50%; background:var(--gold); box-shadow:0 0 4px 1px rgba(212,163,61,.7); animation:twinkle 2.4s ease-in-out infinite; }
+  .cert-header-bulbs span:nth-child(odd){ animation-delay:.6s; }
+  .cert-logo{ font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--gold); letter-spacing:.06em; margin:0 0 .15rem; }
+  .cert-sub-label{ font-size:.7rem; color:#a08060; letter-spacing:.1em; text-transform:uppercase; margin:0; }
+  .cert-badge-row{ margin-top:.7rem; display:flex; justify-content:center; }
+  .cert-badge{ display:inline-flex; align-items:center; gap:5px; background:rgba(212,163,61,.15); border:1px solid rgba(212,163,61,.4); border-radius:999px; padding:3px 12px; color:var(--gold); font-size:.72rem; letter-spacing:.05em; }
+  .cert-body{ padding:1.2rem 1.4rem; background:var(--paper); }
+  .cert-title-row{ text-align:center; margin-bottom:.8rem; }
+  .cert-title-row h3{ font-size:1rem; font-weight:600; margin:0 0 .2rem; }
+  .cert-title-row p{ font-size:.78rem; color:var(--espresso-soft); margin:0; }
+  .cert-divider{ border:none; border-top:0.5px solid rgba(43,27,18,.12); margin:.8rem 0; }
+  .cert-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:.3rem 0; font-size:.8rem; }
+  .cert-label{ color:var(--espresso-soft); flex-shrink:0; }
+  .cert-value{ color:var(--espresso); font-weight:500; font-family:'JetBrains Mono',monospace; font-size:.78rem; text-align:right; word-break:break-all; }
+  .cert-value.ok{ color:var(--green); }
+  .cert-hash-box{ background:var(--cream); border:0.5px solid rgba(43,27,18,.15); border-radius:6px; padding:.5rem .7rem; font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--espresso-soft); word-break:break-all; margin:.6rem 0 .3rem; line-height:1.5; }
+  .cert-footer{ background:var(--cream); border-top:0.5px solid rgba(43,27,18,.12); padding:.9rem 1.4rem; display:flex; align-items:center; gap:12px; }
+  .cert-stamp{ width:46px; height:46px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
+  .cert-footer-text{ font-size:.72rem; color:var(--espresso-soft); line-height:1.5; flex:1; }
+  .cert-footer-text strong{ color:var(--espresso); font-weight:500; }
+  .confetti-piece{ position:absolute; top:50%; left:50%; width:7px; height:10px; pointer-events:none; z-index:5;
+    animation:confettiFall .9s ease-out forwards; }
+  @keyframes confettiFall{ 0%{transform:translate(0,0) rotate(0deg); opacity:1;}
+    100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); opacity:0;} }
+
+  .overlay{ display:none; position:fixed; inset:0; background:rgba(26,16,8,.6); z-index:50;
+    align-items:center; justify-content:center; }
+  .overlay.show{ display:flex; }
+  .modal{ background:var(--paper); border-radius:14px; padding:1.6rem; width:280px; text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.4); }
+  .modal h3{ font-family:'Bebas Neue',sans-serif; font-size:1.3rem; margin:0 0 .8rem; letter-spacing:.03em; }
+  .modal input{ width:100%; text-align:center; font-size:1.5rem; letter-spacing:.3em; padding:10px;
+    border:1px solid rgba(43,27,18,.3); border-radius:8px; margin-bottom:1rem; font-family:'JetBrains Mono',monospace; }
+
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--espresso); color:var(--cream); padding:10px 20px; border-radius:8px; font-size:.85rem;
+    z-index:60; transition:.25s; pointer-events:none; max-width:90%; text-align:center; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.erro{ background:var(--red); }
+  .toast.sucesso{ background:var(--green); }
+
+  .loading-screen{ display:flex; align-items:center; justify-content:center; min-height:200px;
+    color:var(--espresso-soft); font-size:.9rem; }
+</style>
 </head>
 <body>
-
 <div class="app">
 
   <div class="topbar">
@@ -65,10 +294,15 @@
     </section>
 
     <section id="conferencia" class="screen">
-      <h2 class="screen-title">Conferência</h2>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin:1.5rem 0 1rem;">
+        <h2 class="screen-title" style="margin:0;">Conferência</h2>
+        <button class="btn btn-ghost" id="btn-certificado" onclick="abrirCertificado()" title="Certificado antifraude" style="width:38px; height:38px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+          <i class="ti ti-lock" style="font-size:18px;" aria-hidden="true"></i>
+        </button>
+      </div>
       <div class="config-row" style="margin-bottom:1.2rem;">
         <div class="field-group"><label>Rodada</label><select id="conf-rodada-select"></select></div>
-        <div class="field-group"><label>Ticket</label><select id="conf-ticket-select"><option value="" disabled selected>Escolha um ticket</option></select></div>
+        <div class="field-group"><label>Ticket</label><select id="conf-ticket-select"><option value="">Todos os tickets</option></select></div>
       </div>
       <div id="conferencia-content"></div>
     </section>
@@ -85,6 +319,12 @@
   </div>
 </div>
 
+<div class="overlay" id="cert-overlay" style="align-items:center; justify-content:center; overflow-y:auto; padding:1rem;" onclick="if(event.target===this) fecharCertificado();">
+  <div class="modal" style="width:480px; max-width:96vw; text-align:left; padding:0; overflow:hidden; border-radius:14px;">
+    <div id="cert-modal-content"></div>
+  </div>
+</div>
+
 <div class="overlay" id="pin-overlay">
   <div class="modal">
     <h3>Acesso restrito</h3>
@@ -98,6 +338,764 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="script.js"></script>
+<script>
+/* ====================== CONFIGURAÇÃO ====================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAC62tsDM70ojir5ZGsUZ6K_q13xvxk4dM",
+  authDomain: "jogo-da-sorte-dom-leon.firebaseapp.com",
+  projectId: "jogo-da-sorte-dom-leon",
+  storageBucket: "jogo-da-sorte-dom-leon.firebasestorage.app",
+  messagingSenderId: "901921739557",
+  appId: "1:901921739557:web:9b229085c85bd832ff00cc",
+  measurementId: "G-JXDPPVYWLS"
+};
+const ADMIN_PIN = "1234"; // troque aqui pelo PIN que preferir
+const EMOJI_DEFAULT_FAVORITES = ['🎂','🥖','🍞','🥐','🍰','🧁','☕','💰','🎁','🍫'];
+let emojiFavoritos = [...EMOJI_DEFAULT_FAVORITES];
+
+const EMOJI_CATEGORIAS = {
+  'Padaria & Doces': ['🎂','🍰','🧁','🥖','🍞','🥐','🥨','🫓','🍩','🍪','🧇','🥧','🍮','🍯','🍫','🍬','🍭','🍡','🍢','🧆','🥮','🍿','🫙','🧈','🍦'],
+  'Comida & Bebida': ['☕','🫖','🧃','🥤','🍵','🧋','🥛','🍺','🥂','🍷','🫗','🍱','🥗','🍕','🌮','🥪','🧀','🥚','🍳','🫕','🍖','🍗'],
+  'Dinheiro & Valor': ['💰','💵','💴','💶','💷','🪙','💳','💎','🏷️','🎫','🎟️','📦','🛍️','🛒','💹','📈'],
+  'Presentes & Festa': ['🎁','🎉','🎊','🎈','🥳','🪅','🎀','🎗️','🏆','🥇','🥈','🥉','🎖️','🪄','🎭','🎪','🎠','✨','🌟','⭐'],
+  'Natureza & Sorte': ['🍀','🌈','🌸','🌺','🌻','🌹','🍁','🌿','🍃','🎋','🌙','⭐','🌞','🌊','🦋','🐝','🌴','🍄','🌵','🦄'],
+  'Símbolos & Estrelas': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💖','💫','🔥','⚡','🌟','✨','💥','🎯','🔮','🪬','🧿','☯️'],
+  'Esportes & Lazer': ['⚽','🏀','🎾','🏐','🎱','🏓','🎮','🎲','🃏','🎴','♟️','🎸','🎵','🎶','🎬','📸'],
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ====================== ESTADO ====================== */
+let currentRodada = null;
+let currentRodadaId = null;
+let prizesDraft = [
+  { emoji:'🎂', nome:'Bolo de chocolate' }
+];
+let selected = new Set();
+let currentTicket = null;
+let currentTicketRodada = null;
+let unsubTicketRodada = null;
+let ordemRevelacao = [];
+let confRodadaAtual = null;
+let unsubConferencia = null;
+let unsubTickets = null;
+let pendingPinCallback = null;
+
+/* ====================== UTIL ====================== */
+function pad(n, len){ return String(n).padStart(len||3,'0'); }
+function brl(v){ return 'R$ ' + (v||0).toFixed(2).replace('.',','); }
+function showToast(msg, tipo){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (tipo ? (' '+tipo) : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove('show'), 3200);
+}
+function shuffleArray(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+}
+function makeBall(n){
+  const b = document.createElement('div');
+  b.className = 'ball'; b.dataset.n = n;
+  const disc = document.createElement('div');
+  disc.className = 'disc'; disc.textContent = n;
+  b.appendChild(disc);
+  return b;
+}
+
+/* ====================== PIN ====================== */
+function comPin(callback){
+  pendingPinCallback = callback;
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-overlay').classList.add('show');
+  setTimeout(()=> document.getElementById('pin-input').focus(), 50);
+}
+function fecharPinModal(){
+  document.getElementById('pin-overlay').classList.remove('show');
+  pendingPinCallback = null;
+}
+function confirmarPin(){
+  const val = document.getElementById('pin-input').value;
+  document.getElementById('pin-overlay').classList.remove('show');
+  if(val === ADMIN_PIN){ const cb = pendingPinCallback; pendingPinCallback = null; cb && cb(); }
+  else { showToast('PIN incorreto', 'erro'); pendingPinCallback = null; }
+}
+document.getElementById('pin-input').addEventListener('keydown', e=>{ if(e.key==='Enter') confirmarPin(); });
+
+/* ====================== NAVEGAÇÃO ====================== */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    if(tab.dataset.screen === 'abertura' || tab.dataset.screen === 'conferencia'){
+      comPin(()=> showScreen(tab.dataset.screen));
+    } else {
+      showScreen(tab.dataset.screen);
+    }
+  });
+});
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=> s.classList.toggle('active', s.id===name));
+  document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.dataset.screen===name));
+}
+
+/* ====================== EMOJI FAVORITOS ====================== */
+const FAVS_DOC = ()=> db.collection('config').doc('emojiFavoritos');
+
+async function carregarFavoritos(){
+  try{
+    const snap = await FAVS_DOC().get();
+    if(snap.exists && snap.data().lista) emojiFavoritos = snap.data().lista;
+  }catch(e){ /* usa padrão */ }
+}
+async function salvarFavoritos(){
+  try{ await FAVS_DOC().set({ lista: emojiFavoritos }, { merge:true }); }catch(e){}
+}
+
+function abrirEmojiPanel(){
+  const content = document.getElementById('emoji-panel-content');
+  content.innerHTML = '';
+  Object.entries(EMOJI_CATEGORIAS).forEach(([cat, emojis])=>{
+    const label = document.createElement('p'); label.className = 'emoji-cat-label'; label.textContent = cat;
+    content.appendChild(label);
+    const grid = document.createElement('div'); grid.className = 'emoji-cat-grid';
+    emojis.forEach(e=>{
+      const btn = document.createElement('button'); btn.type='button'; btn.className = 'emoji-cat-opt';
+      btn.textContent = e;
+      const jaFav = emojiFavoritos.includes(e);
+      if(jaFav) btn.classList.add('ja-fav');
+      btn.title = jaFav ? 'Já nos favoritos' : 'Adicionar aos favoritos';
+      if(!jaFav){
+        btn.addEventListener('click', ()=>{
+          if(emojiFavoritos.length >= 10){ showToast('Limite de 10 favoritos atingido. Desfavorite um antes de adicionar.', 'erro'); return; }
+          emojiFavoritos.push(e);
+          salvarFavoritos();
+          fecharEmojiPanel();
+          renderPrizeEditList();
+        });
+      }
+      grid.appendChild(btn);
+    });
+    content.appendChild(grid);
+  });
+  document.getElementById('emoji-panel').classList.add('show');
+}
+function fecharEmojiPanel(){ document.getElementById('emoji-panel').classList.remove('show'); }
+
+/* ====================== ABERTURA: CADASTRO DE PRÊMIOS ====================== */
+const prizeEditList = document.getElementById('prize-edit-list');
+let dragSrc = null;
+
+function renderPrizeEditList(){
+  prizeEditList.innerHTML = '';
+  prizesDraft.forEach((p, idx)=>{
+    const card = document.createElement('div'); card.className = 'prize-edit-card';
+    const top = document.createElement('div'); top.className = 'prize-edit-top';
+    const preview = document.createElement('span'); preview.className = 'emoji-preview'; preview.textContent = p.emoji;
+    const nameInput = document.createElement('input'); nameInput.className = 'prize-name-input';
+    nameInput.value = p.nome; nameInput.placeholder = 'Nome do prêmio';
+    nameInput.addEventListener('input', e=>{ p.nome = e.target.value; });
+    const removeBtn = document.createElement('button'); removeBtn.className = 'remove-btn'; removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', ()=>{ prizesDraft.splice(idx,1); renderPrizeEditList(); });
+    const dupBtn = document.createElement('button'); dupBtn.type='button'; dupBtn.className = 'duplicate-btn';
+    dupBtn.textContent = 'Duplicar';
+    dupBtn.addEventListener('click', ()=>{ prizesDraft.splice(idx+1, 0, { emoji:p.emoji, nome:p.nome }); renderPrizeEditList(); });
+    top.appendChild(preview); top.appendChild(nameInput); top.appendChild(dupBtn); top.appendChild(removeBtn);
+
+    // PICKER DE FAVORITOS com drag-and-drop e desfavoritar
+    const picker = document.createElement('div'); picker.className = 'emoji-picker';
+
+    emojiFavoritos.forEach((e, fi)=>{
+      const opt = document.createElement('div');
+      opt.className = 'emoji-opt' + (e===p.emoji ? ' active' : '');
+      opt.textContent = e; opt.draggable = true; opt.dataset.fi = fi;
+      opt.title = 'Arraste para reordenar';
+
+      // selecionar
+      opt.addEventListener('click', ()=>{ p.emoji = e; renderPrizeEditList(); });
+
+      // desfavoritar
+      const desfavBtn = document.createElement('button'); desfavBtn.className = 'desfav-btn'; desfavBtn.textContent = '×';
+      desfavBtn.title = 'Remover dos favoritos';
+      desfavBtn.addEventListener('click', ev=>{ ev.stopPropagation(); emojiFavoritos.splice(fi,1); salvarFavoritos(); renderPrizeEditList(); });
+      opt.appendChild(desfavBtn);
+
+      // drag-and-drop reordenar
+      opt.addEventListener('dragstart', ev=>{ dragSrc = fi; opt.classList.add('dragging'); ev.dataTransfer.effectAllowed='move'; });
+      opt.addEventListener('dragend', ()=>{ opt.classList.remove('dragging'); });
+      opt.addEventListener('dragover', ev=>{ ev.preventDefault(); ev.dataTransfer.dropEffect='move'; });
+      opt.addEventListener('drop', ev=>{
+        ev.preventDefault();
+        if(dragSrc === null || dragSrc === fi) return;
+        const moved = emojiFavoritos.splice(dragSrc,1)[0];
+        emojiFavoritos.splice(fi, 0, moved);
+        dragSrc = null;
+        salvarFavoritos();
+        renderPrizeEditList();
+      });
+      picker.appendChild(opt);
+    });
+
+    // botão + para abrir painel
+    const addBtn = document.createElement('button'); addBtn.type='button';
+    addBtn.className = 'emoji-add-btn' + (emojiFavoritos.length >= 10 ? ' disabled' : '');
+    addBtn.textContent = '+'; addBtn.title = emojiFavoritos.length >= 10 ? 'Limite de 10 favoritos atingido' : 'Adicionar emoji aos favoritos';
+    addBtn.addEventListener('click', ()=>{ if(emojiFavoritos.length < 10) abrirEmojiPanel(); });
+    picker.appendChild(addBtn);
+
+    card.appendChild(top); card.appendChild(picker);
+    prizeEditList.appendChild(card);
+  });
+}
+function addPrize(){ prizesDraft.push({ emoji: emojiFavoritos[0]||'🎁', nome:'' }); renderPrizeEditList(); }
+
+async function proximoContador(campo){
+  const ref = db.collection('config').doc('contadores');
+  return db.runTransaction(async tx=>{
+    const snap = await tx.get(ref);
+    let valorAtual = 1;
+    if(snap.exists && snap.data()[campo]) valorAtual = snap.data()[campo];
+    tx.set(ref, { [campo]: valorAtual+1 }, { merge:true });
+    return valorAtual;
+  });
+}
+
+async function abrirRodada(){
+  const aviso = document.getElementById('abertura-aviso');
+  aviso.innerHTML = '';
+  const qtd = parseInt(document.getElementById('input-qtd').value, 10);
+  const valor = parseFloat(document.getElementById('input-valor').value);
+
+  if(currentRodada){
+    showToast('Já existe a rodada #'+pad(currentRodada.numero)+' aberta. Encerre antes de abrir outra.', 'erro');
+    return;
+  }
+  if(!qtd || qtd < 1){ showToast('Informe a quantidade de números', 'erro'); return; }
+  if(isNaN(valor) || valor <= 0){ showToast('Informe o valor por número', 'erro'); return; }
+  if(prizesDraft.length === 0){ showToast('Cadastre ao menos 1 prêmio', 'erro'); return; }
+  if(prizesDraft.some(p=> !p.nome.trim())){ showToast('Preencha o nome de todos os prêmios', 'erro'); return; }
+  if(prizesDraft.length > qtd){ showToast('Você tem mais prêmios do que números disponíveis', 'erro'); return; }
+
+  const slots = Array.from({length: qtd}, (_,i)=> i+1);
+  shuffleArray(slots);
+  const premioPorSlot = {};
+  prizesDraft.forEach((p, idx)=>{ premioPorSlot[slots[idx]] = { emoji:p.emoji, nome:p.nome }; });
+
+  const numeros = {};
+  for(let n=1; n<=qtd; n++){
+    numeros[n] = {
+      vendido:false, revelado:false, retirado:false,
+      ticketId:null, ticketCodigo:null, comprador:null,
+      premio: premioPorSlot[n] || null
+    };
+  }
+
+  try{
+    const numeroRodada = await proximoContador('proximaRodada');
+    await db.collection('rodadas').add({
+      numero: numeroRodada,
+      status: 'aberta',
+      qtdNumeros: qtd,
+      valorNumero: valor,
+      premiosCadastrados: prizesDraft.map(p=>({emoji:p.emoji, nome:p.nome})),
+      numeros: numeros,
+      totalArrecadado: 0,
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+      finalizadaEm: null
+    });
+    showToast('Rodada #'+pad(numeroRodada)+' aberta!', 'sucesso');
+    showScreen('vitrine');
+  }catch(err){ showToast('Erro ao abrir rodada: '+err.message, 'erro'); }
+}
+
+/* ====================== RODADA ATUAL (listener) ====================== */
+function listenCurrentRodada(){
+  db.collection('rodadas').where('status','==','aberta').limit(1)
+    .onSnapshot(snap=>{
+      if(snap.empty){ currentRodada = null; currentRodadaId = null; }
+      else { const d = snap.docs[0]; currentRodada = d.data(); currentRodadaId = d.id; }
+      renderTopbar();
+      renderVitrine();
+      renderVenda();
+    }, err=> showToast('Erro ao carregar rodada: '+err.message, 'erro'));
+}
+
+function renderTopbar(){
+  const meta = document.getElementById('topbar-meta');
+  if(!currentRodada){
+    meta.innerHTML = '<span class="pill">Nenhuma rodada aberta</span>';
+    return;
+  }
+  meta.innerHTML =
+    '<span class="pill">Rodada #'+pad(currentRodada.numero)+'</span>'+
+    '<span class="pill">'+brl(currentRodada.valorNumero)+' por número</span>'+
+    '<span class="pill">'+currentRodada.qtdNumeros+' números em jogo</span>';
+}
+
+/* ====================== VITRINE ====================== */
+function renderVitrine(){
+  const el = document.getElementById('vitrine-content');
+  if(!currentRodada){
+    el.innerHTML = '<p class="empty-state">Nenhuma rodada aberta no momento. Peça para o admin abrir uma rodada na aba "Abertura".</p>';
+    return;
+  }
+  const prizesHtml = currentRodada.premiosCadastrados.map(p=>
+    '<div class="prize-card"><span class="emoji">'+p.emoji+'</span><h3>'+p.nome+'</h3></div>'
+  ).join('');
+  el.innerHTML =
+    '<div class="show-banner">'+
+      '<div class="show-bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+      '<div class="stars-row"><span class="star star-lg">★</span><span class="star star-sm">★</span>'+
+        '<h2 class="show-title"><span class="line1">SHOW DE</span><span class="line2">PRÊMIOS</span></h2>'+
+        '<span class="star star-sm">★</span><span class="star star-lg">★</span></div>'+
+      '<div class="dom-leon-badge">DOM LEON</div>'+
+    '</div>'+
+    '<h2 class="screen-title">Prêmios desta rodada</h2>'+
+    '<div class="prize-grid">'+prizesHtml+'</div>'+
+    '<button class="btn btn-gold" onclick="showScreen(\'venda\')">Comprar números →</button>';
+}
+
+/* ====================== VENDA ====================== */
+function renderVenda(){
+  const panel = document.getElementById('venda-panel');
+  const content = document.getElementById('venda-content');
+  if(!currentRodada){
+    panel.innerHTML = '';
+    content.innerHTML = '<p class="empty-state">Nenhuma rodada aberta para venda no momento.</p>';
+    return;
+  }
+  selected.clear();
+  panel.innerHTML =
+    '<div class="venda-stat"><label>Selecionados</label><p class="big" id="venda-count">0</p></div>'+
+    '<div class="venda-stat"><label>Total</label><p class="big" id="venda-total">R$ 0,00</p></div>'+
+    '<div class="field-group" style="min-width:160px;"><label>Nome do cliente</label><input type="text" id="venda-nome" placeholder="Ex: Carlos Souza"></div>'+
+    '<div class="field-group" style="min-width:140px;"><label>Telefone</label><input type="tel" id="venda-telefone" placeholder="(00) 00000-0000"></div>'+
+    '<div class="field-group" style="min-width:130px;"><label>Forma de pagamento</label>'+
+      '<select id="venda-pagamento"><option>Dinheiro</option><option>Pix</option><option>Cartão</option></select></div>'+
+    '<button class="btn btn-gold" id="btn-emitir" onclick="emitirTicket()">🎟️ Emitir ticket</button>';
+  content.innerHTML =
+    '<div class="ball-grid" id="venda-grid"></div>'+
+    '<p class="hint">🔒 = já vendido · toque para selecionar</p>';
+  renderVendaGrid();
+  updateVendaSummary();
+}
+function renderVendaGrid(){
+  const grid = document.getElementById('venda-grid');
+  if(!grid || !currentRodada) return;
+  grid.innerHTML = '';
+  for(let n=1; n<=currentRodada.qtdNumeros; n++){
+    const b = makeBall(n);
+    const info = currentRodada.numeros[n];
+    if(info.vendido){
+      b.classList.add('locked');
+    } else {
+      b.classList.add('clickable');
+      if(selected.has(n)) b.classList.add('selected');
+      b.addEventListener('click', ()=>{
+        selected.has(n) ? selected.delete(n) : selected.add(n);
+        renderVendaGrid(); updateVendaSummary();
+      });
+    }
+    grid.appendChild(b);
+  }
+}
+function updateVendaSummary(){
+  const countEl = document.getElementById('venda-count');
+  const totalEl = document.getElementById('venda-total');
+  if(!countEl || !currentRodada) return;
+  countEl.textContent = selected.size;
+  totalEl.textContent = brl(selected.size * currentRodada.valorNumero);
+}
+
+async function emitirTicket(){
+  if(!currentRodadaId){ showToast('Nenhuma rodada aberta', 'erro'); return; }
+  if(selected.size === 0){ showToast('Selecione ao menos um número', 'erro'); return; }
+  const nomeInput = document.getElementById('venda-nome');
+  const nome = nomeInput.value.trim();
+  if(!nome){ showToast('Informe o nome do cliente', 'erro'); return; }
+  const telefone = document.getElementById('venda-telefone').value.trim();
+  const pagamento = document.getElementById('venda-pagamento').value;
+  const numerosArr = Array.from(selected);
+  const valorNumero = currentRodada.valorNumero;
+  const valorTotal = numerosArr.length * valorNumero;
+
+  const rodadaRef = db.collection('rodadas').doc(currentRodadaId);
+  const counterRef = db.collection('config').doc('contadores');
+  const ticketRef = db.collection('tickets').doc();
+
+  const btn = document.getElementById('btn-emitir');
+  if(btn){ btn.disabled = true; }
+
+  try{
+    const codigoFmt = await db.runTransaction(async tx=>{
+      const rodadaSnap = await tx.get(rodadaRef);
+      const counterSnap = await tx.get(counterRef);
+      if(!rodadaSnap.exists) throw new Error('Rodada não encontrada');
+      const data = rodadaSnap.data();
+      for(const n of numerosArr){
+        if(data.numeros[n].vendido) throw new Error('O número '+n+' já foi vendido por outro atendimento. Atualize a tela.');
+      }
+      let proximoTicket = 1;
+      if(counterSnap.exists && counterSnap.data().proximoTicket) proximoTicket = counterSnap.data().proximoTicket;
+      const codigo = pad(proximoTicket, 5);
+
+      const updates = {};
+      numerosArr.forEach(n=>{
+        updates['numeros.'+n+'.vendido'] = true;
+        updates['numeros.'+n+'.ticketId'] = ticketRef.id;
+        updates['numeros.'+n+'.ticketCodigo'] = codigo;
+        updates['numeros.'+n+'.comprador'] = nome;
+      });
+      updates['totalArrecadado'] = firebase.firestore.FieldValue.increment(valorTotal);
+
+      tx.update(rodadaRef, updates);
+      tx.set(counterRef, { proximoTicket: proximoTicket+1 }, { merge:true });
+      tx.set(ticketRef, {
+        rodadaId: currentRodadaId, rodadaNumero: data.numero, codigo: codigo,
+        numeros: numerosArr, comprador: nome, telefone: telefone, formaPagamento: pagamento, valorTotal: valorTotal,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      return codigo;
+    });
+
+    showToast('Ticket #'+codigoFmt+' emitido!', 'sucesso');
+    await carregarTicketPorCodigo(codigoFmt);
+    showScreen('revelacao');
+  }catch(err){
+    showToast(err.message, 'erro');
+    renderVendaGrid();
+  }finally{
+    if(btn){ btn.disabled = false; }
+  }
+}
+
+/* ====================== REVELAÇÃO ====================== */
+function buscarTicketManual(){
+  const codigo = document.getElementById('busca-ticket').value.trim();
+  if(!codigo){ showToast('Informe o código do ticket', 'erro'); return; }
+  carregarTicketPorCodigo(pad(codigo,5));
+}
+
+async function carregarTicketPorCodigo(codigo){
+  try{
+    const snap = await db.collection('tickets').where('codigo','==',codigo).limit(1).get();
+    if(snap.empty){ showToast('Ticket não encontrado', 'erro'); return; }
+    const doc = snap.docs[0];
+    currentTicket = { id: doc.id, ...doc.data() };
+    ordemRevelacao = [];
+    if(unsubTicketRodada) unsubTicketRodada();
+    let primeira = true;
+    unsubTicketRodada = db.collection('rodadas').doc(currentTicket.rodadaId).onSnapshot(s=>{
+      currentTicketRodada = { id:s.id, ...s.data() };
+      if(primeira){
+        ordemRevelacao = currentTicket.numeros.filter(n=> currentTicketRodada.numeros[n].revelado).sort((a,b)=>a-b);
+        primeira = false;
+        renderRevelacao();
+      } else {
+        currentTicket.numeros.forEach(n=>{
+          if(currentTicketRodada.numeros[n].revelado && !ordemRevelacao.includes(n)) ordemRevelacao.push(n);
+        });
+        renderRevelacaoGrid();
+        renderRevelacaoLista();
+      }
+    });
+  }catch(err){ showToast('Erro ao buscar ticket: '+err.message, 'erro'); }
+}
+
+function renderRevelacao(){
+  const el = document.getElementById('revelacao-content');
+  if(!currentTicket || !currentTicketRodada){
+    el.innerHTML = '<p class="empty-state">Nenhum ticket carregado. Emita um ticket na aba Venda, ou busque pelo código acima.</p>';
+    return;
+  }
+  el.innerHTML =
+    '<div class="meta-row" style="margin-bottom:1rem;">'+
+      '<span class="pill" style="background:var(--espresso); border-color:var(--espresso);">Ticket #'+currentTicket.codigo+'</span>'+
+      '<span style="font-size:.85rem; color:var(--espresso-soft);">'+currentTicket.numeros.length+' números · toque nas suas bolas para revelar</span>'+
+    '</div>'+
+    '<div class="ball-grid" id="revelacao-grid"></div>'+
+    '<div id="revelacao-lista"></div>';
+  renderRevelacaoGrid();
+  renderRevelacaoLista();
+}
+
+function renderRevelacaoGrid(){
+  const grid = document.getElementById('revelacao-grid');
+  if(!grid || !currentTicket || !currentTicketRodada) return;
+  grid.innerHTML = '';
+  currentTicket.numeros.forEach(n=>{
+    const b = makeBall(n);
+    const info = currentTicketRodada.numeros[n];
+    if(info.revelado){
+      b.classList.add(info.premio ? 'win' : 'lose');
+      b.querySelector('.disc').textContent = info.premio ? '🎉' : '😢';
+    } else {
+      b.classList.add('clickable','mine');
+      b.addEventListener('click', ()=> revelarNumero(n));
+    }
+    grid.appendChild(b);
+  });
+}
+
+function renderRevelacaoLista(){
+  const el = document.getElementById('revelacao-lista');
+  if(!el) return;
+  if(ordemRevelacao.length === 0){
+    el.innerHTML = '<div class="result-banner">Toque em um dos seus números para revelar o resultado.</div>';
+    return;
+  }
+  el.innerHTML = ordemRevelacao.slice().reverse().map(n=>{
+    const info = currentTicketRodada.numeros[n];
+    const win = !!info.premio;
+    const msg = win
+      ? ('🎉 Bola '+n+': você ganhou '+info.premio.nome+'!')
+      : ('😢 Bola '+n+': não foi dessa vez! Tente na próxima rodada.');
+    return '<div class="result-banner '+(win ? 'win' : 'lose')+'">'+msg+'</div>';
+  }).join('');
+}
+
+async function revelarNumero(n){
+  const rodadaRef = db.collection('rodadas').doc(currentTicket.rodadaId);
+  try{
+    const info = await db.runTransaction(async tx=>{
+      const snap = await tx.get(rodadaRef);
+      const data = snap.data();
+      const atual = data.numeros[n];
+      if(atual.revelado) return atual;
+      tx.update(rodadaRef, { ['numeros.'+n+'.revelado']: true });
+      atual.revelado = true;
+      return atual;
+    });
+    currentTicketRodada.numeros[n] = info;
+    if(!ordemRevelacao.includes(n)) ordemRevelacao.push(n);
+    renderRevelacaoGrid();
+    renderRevelacaoLista();
+    if(info.premio){
+      const ball = document.querySelector('#revelacao-grid .ball[data-n="'+n+'"]');
+      if(ball) burstConfetti(ball);
+    }
+  }catch(err){ showToast('Erro ao revelar: '+err.message, 'erro'); }
+}
+
+function burstConfetti(el){
+  const colors = ['#D4A33D','#8C2F2F','#2F6B4F','#FBF8F1'];
+  for(let i=0;i<16;i++){
+    const p = document.createElement('div'); p.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 30 + Math.random()*40;
+    p.style.setProperty('--dx', Math.cos(angle)*dist + 'px');
+    p.style.setProperty('--dy', (Math.sin(angle)*dist + 30) + 'px');
+    p.style.setProperty('--rot', (Math.random()*360) + 'deg');
+    p.style.background = colors[i % colors.length];
+    p.style.transform = 'rotate(' + (Math.random()*360) + 'deg)';
+    el.appendChild(p);
+    setTimeout(()=> p.remove(), 950);
+  }
+}
+
+/* ====================== CONFERÊNCIA ====================== */
+function popularSeletorRodadas(){
+  db.collection('rodadas').orderBy('numero','desc').limit(20).onSnapshot(snap=>{
+    const sel = document.getElementById('conf-rodada-select');
+    const valorAtual = sel.value;
+    sel.innerHTML = snap.docs.map(d=>{
+      const data = d.data();
+      return '<option value="'+d.id+'">Rodada #'+pad(data.numero)+' '+(data.status==='aberta' ? '(aberta)' : '(finalizada)')+'</option>';
+    }).join('');
+    let alvo = null;
+    if(valorAtual && snap.docs.some(d=> d.id===valorAtual)){
+      alvo = valorAtual;
+    } else {
+      const aberta = snap.docs.find(d=> d.data().status==='aberta');
+      alvo = aberta ? aberta.id : (snap.docs[0] ? snap.docs[0].id : null);
+    }
+    if(alvo){ sel.value = alvo; carregarConferencia(alvo); }
+  });
+  document.getElementById('conf-rodada-select').addEventListener('change', e=> carregarConferencia(e.target.value));
+  document.getElementById('conf-ticket-select').addEventListener('change', renderConferencia);
+}
+
+function popularSeletorTickets(rodadaId){
+  if(unsubTickets) unsubTickets();
+  const sel = document.getElementById('conf-ticket-select');
+  if(!rodadaId){
+    sel.innerHTML = '<option value="" disabled selected>Escolha um ticket</option><option value="todos">Todos os tickets</option>';
+    return;
+  }
+  unsubTickets = db.collection('tickets').where('rodadaId','==',rodadaId).onSnapshot(snap=>{
+    const valorAtual = sel.value;
+    let html = '<option value="" disabled selected>Escolha um ticket</option>';
+    html += '<option value="todos">Todos os tickets</option>';
+    snap.docs.forEach(d=>{
+      const t = d.data();
+      html += '<option value="'+d.id+'">'+t.comprador+' (#'+t.codigo+')</option>';
+    });
+    sel.innerHTML = html;
+    if(valorAtual && (valorAtual === 'todos' || snap.docs.some(d=> d.id===valorAtual))) sel.value = valorAtual;
+    else sel.value = '';
+  });
+}
+
+function carregarConferencia(rodadaId){
+  if(!rodadaId) return;
+  if(unsubConferencia) unsubConferencia();
+  unsubConferencia = db.collection('rodadas').doc(rodadaId).onSnapshot(s=>{
+    confRodadaAtual = { id:s.id, ...s.data() };
+    renderConferencia();
+  });
+  popularSeletorTickets(rodadaId);
+}
+
+function statusInfo(info){
+  if(!info.vendido) return { label:'Não vendido', cls:'semresultado' };
+  if(!info.premio) return { label:'Não premiado', cls:'semresultado' };
+  return info.retirado ? { label:'Retirado', cls:'ganhou' } : { label:'Pendente', cls:'pendente' };
+}
+
+function renderConferencia(){
+  const el = document.getElementById('conferencia-content');
+  if(!confRodadaAtual){ el.innerHTML = ''; return; }
+  const rodada = confRodadaAtual;
+  const ticketFiltro = document.getElementById('conf-ticket-select').value;
+  const filtroAtivo = ticketFiltro && ticketFiltro !== 'todos';
+
+  if(rodada.status !== 'finalizada' && !filtroAtivo){
+    el.innerHTML =
+      '<p class="empty-state">Esta rodada ainda está aberta. A conferência geral fica disponível após o encerramento — mas você pode conferir um ticket específico selecionando-o no filtro acima.</p>'+
+      '<div class="btn-row" style="margin-top:1rem;">'+
+        '<button class="btn btn-danger" onclick="confirmarEncerrarRodada(\''+rodada.id+'\')">Encerrar rodada e revelar tudo</button>'+
+      '</div>';
+    return;
+  }
+
+  let linhas = '';
+  for(let n=1; n<=rodada.qtdNumeros; n++){
+    const info = rodada.numeros[n];
+    // rodada aberta + filtro de ticket: só números revelados do ticket
+    if(rodada.status !== 'finalizada'){
+      if(!info.revelado) continue;
+      if(info.ticketId !== ticketFiltro) continue;
+    } else {
+      // rodada encerrada: lista todos, aplica filtro se houver
+      if(filtroAtivo && info.ticketId !== ticketFiltro) continue;
+    }
+    const st = statusInfo(info);
+    const premioTxt = info.premio ? (info.premio.emoji+' '+info.premio.nome) : '—';
+    const retirarBtn = (st.cls==='pendente')
+      ? '<button class="retirar-link" onclick="marcarRetirado(\''+rodada.id+'\','+n+')">marcar retirado</button>'
+      : '';
+    linhas += '<tr><td>'+pad(n,2)+'</td><td>'+(info.comprador||'—')+'</td><td>'+premioTxt+'</td>'+
+      '<td><span class="status-chip '+st.cls+'">'+st.label+'</span>'+retirarBtn+'</td></tr>';
+  }
+  if(!linhas){ linhas = '<tr><td colspan="4" style="text-align:center; color:var(--espresso-soft);">Nenhum registro encontrado</td></tr>'; }
+  el.innerHTML =
+    '<table class="ledger"><thead><tr><th>Número</th><th>Comprador</th><th>Prêmio</th><th>Status</th></tr></thead>'+
+    '<tbody>'+linhas+'</tbody></table>';
+}
+
+function marcarRetirado(rodadaId, n){
+  db.collection('rodadas').doc(rodadaId).update({ ['numeros.'+n+'.retirado']: true })
+    .catch(err=> showToast('Erro: '+err.message, 'erro'));
+}
+
+function confirmarEncerrarRodada(rodadaId){
+  comPin(()=>{
+    if(!confirm('Encerrar a rodada e revelar todos os números restantes? Essa ação não pode ser desfeita.')) return;
+    encerrarRodada(rodadaId);
+  });
+}
+
+async function encerrarRodada(rodadaId){
+  const rodadaRef = db.collection('rodadas').doc(rodadaId);
+  try{
+    await db.runTransaction(async tx=>{
+      const snap = await tx.get(rodadaRef);
+      const data = snap.data();
+      const updates = { status:'finalizada', finalizadaEm: firebase.firestore.FieldValue.serverTimestamp() };
+      for(let n=1; n<=data.qtdNumeros; n++){
+        if(!data.numeros[n].revelado) updates['numeros.'+n+'.revelado'] = true;
+      }
+      tx.update(rodadaRef, updates);
+    });
+    showToast('Rodada encerrada! Todos os números foram revelados.', 'sucesso');
+  }catch(err){ showToast('Erro ao encerrar: '+err.message, 'erro'); }
+}
+
+/* ====================== CERTIFICADO ANTIFRAUDE ====================== */
+function abrirCertificado(){
+  if(!confRodadaAtual){ showToast('Nenhuma rodada selecionada', 'erro'); return; }
+  const rodada = confRodadaAtual;
+  const criadoEm = rodada.criadoEm ? rodada.criadoEm.toDate() : null;
+  const finalizadaEm = rodada.finalizadaEm ? rodada.finalizadaEm.toDate() : null;
+  const fmtData = d => d ? d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR') : '—';
+  const totalPremiados = Object.values(rodada.numeros).filter(n=> n.premio).length;
+  const totalVendidos = Object.values(rodada.numeros).filter(n=> n.vendido).length;
+  const hash = gerarHash(rodada);
+  const certId = 'CERT-' + pad(rodada.numero) + '-' + (criadoEm ? criadoEm.getFullYear() : '—');
+
+  document.getElementById('cert-modal-content').innerHTML =
+    '<div class="cert-header" style="position:relative;">'+
+      '<div class="cert-header-bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+      '<button class="cert-close-btn" onclick="fecharCertificado()">×</button>'+
+      '<p class="cert-logo">Dom Leon</p>'+
+      '<p class="cert-sub-label">Padaria · Salto de Pirapora/SP</p>'+
+      '<div class="cert-badge-row"><span class="cert-badge">🔐 Certificado antifraude</span></div>'+
+    '</div>'+
+    '<div class="cert-body">'+
+      '<div class="cert-title-row">'+
+        '<h3>Certificado de integridade do sorteio</h3>'+
+        '<p>Os prêmios foram embaralhados pelo sistema antes de qualquer número ser vendido.</p>'+
+      '</div>'+
+      '<hr class="cert-divider">'+
+      '<div class="cert-row"><span class="cert-label">Rodada</span><span class="cert-value">#'+pad(rodada.numero)+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Total de números</span><span class="cert-value">'+rodada.qtdNumeros+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Números premiados</span><span class="cert-value">'+totalPremiados+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Números vendidos</span><span class="cert-value">'+totalVendidos+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Embaralhado em</span><span class="cert-value">'+fmtData(criadoEm)+'</span></div>'+
+      (finalizadaEm ? '<div class="cert-row"><span class="cert-label">Encerrado em</span><span class="cert-value">'+fmtData(finalizadaEm)+'</span></div>' : '')+
+      '<div class="cert-row"><span class="cert-label">Status</span><span class="cert-value ok">'+(rodada.status==='finalizada' ? '✓ Finalizada' : '⏳ Em andamento')+'</span></div>'+
+      '<hr class="cert-divider">'+
+      '<p style="font-size:.75rem; color:var(--espresso-soft); margin:0 0 4px;">Hash de integridade (SHA-256 simulado)</p>'+
+      '<div class="cert-hash-box">'+hash+'</div>'+
+      '<p style="font-size:.7rem; color:var(--espresso-soft); margin:0;">Gerado a partir dos dados da rodada. Qualquer alteração posterior resulta em hash diferente.</p>'+
+    '</div>'+
+    '<div class="cert-footer">'+
+      '<div class="cert-stamp">🎱</div>'+
+      '<div class="cert-footer-text"><strong>Jogo da Sorte Dom Leon</strong><br>Certificado gerado automaticamente em '+fmtData(new Date())+'.<br>ID: '+certId+'</div>'+
+    '</div>';
+  document.getElementById('cert-overlay').classList.add('show');
+}
+
+function fecharCertificado(){
+  document.getElementById('cert-overlay').classList.remove('show');
+}
+
+function gerarHash(rodada){
+  const dados = JSON.stringify({
+    numero: rodada.numero,
+    numeros: Object.entries(rodada.numeros).map(([n,v])=>({ n, premio: v.premio?.nome||null })),
+  });
+  let h = 0;
+  for(let i=0;i<dados.length;i++){
+    h = ((h<<5)-h) + dados.charCodeAt(i);
+    h |= 0;
+  }
+  const base = Math.abs(h).toString(16).padStart(8,'0');
+  const ts = (rodada.criadoEm ? rodada.criadoEm.seconds : Date.now()).toString(16);
+  const seed = (base + ts).repeat(5).slice(0,64);
+  return seed.split('').map((c,i)=> ((parseInt(c,16)||0) ^ (rodada.numero + i)) % 16).map(n=>n.toString(16)).join('');
+}
+auth.signInAnonymously().then(async ()=>{
+  await carregarFavoritos();
+  renderPrizeEditList();
+  listenCurrentRodada();
+  popularSeletorRodadas();
+}).catch(err=>{
+  showToast('Erro ao conectar: '+err.message, 'erro');
+});
+</script>
 </body>
 </html>

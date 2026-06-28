@@ -182,6 +182,28 @@
   .retirar-link{ font-size:.72rem; color:var(--green); background:none; border:none; cursor:pointer;
     text-decoration:underline; padding:0; margin-left:6px; font-family:'Inter',sans-serif; }
 
+  .cert-header{ background:#2B1B12; padding:1.4rem 1.5rem 1.2rem; text-align:center; position:relative; overflow:hidden; }
+  .cert-header-bulbs{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-around; padding-top:4px; }
+  .cert-header-bulbs span{ width:5px; height:5px; border-radius:50%; background:var(--gold); box-shadow:0 0 4px 1px rgba(212,163,61,.7); animation:twinkle 2.4s ease-in-out infinite; }
+  .cert-header-bulbs span:nth-child(odd){ animation-delay:.6s; }
+  .cert-logo{ font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--gold); letter-spacing:.06em; margin:0 0 .15rem; }
+  .cert-sub-label{ font-size:.7rem; color:#a08060; letter-spacing:.1em; text-transform:uppercase; margin:0; }
+  .cert-badge-row{ margin-top:.7rem; display:flex; justify-content:center; }
+  .cert-badge{ display:inline-flex; align-items:center; gap:5px; background:rgba(212,163,61,.15); border:1px solid rgba(212,163,61,.4); border-radius:999px; padding:3px 12px; color:var(--gold); font-size:.72rem; letter-spacing:.05em; }
+  .cert-body{ padding:1.2rem 1.4rem; background:var(--paper); }
+  .cert-title-row{ text-align:center; margin-bottom:.8rem; }
+  .cert-title-row h3{ font-size:1rem; font-weight:600; margin:0 0 .2rem; }
+  .cert-title-row p{ font-size:.78rem; color:var(--espresso-soft); margin:0; }
+  .cert-divider{ border:none; border-top:0.5px solid rgba(43,27,18,.12); margin:.8rem 0; }
+  .cert-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:.3rem 0; font-size:.8rem; }
+  .cert-label{ color:var(--espresso-soft); flex-shrink:0; }
+  .cert-value{ color:var(--espresso); font-weight:500; font-family:'JetBrains Mono',monospace; font-size:.78rem; text-align:right; word-break:break-all; }
+  .cert-value.ok{ color:var(--green); }
+  .cert-hash-box{ background:var(--cream); border:0.5px solid rgba(43,27,18,.15); border-radius:6px; padding:.5rem .7rem; font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--espresso-soft); word-break:break-all; margin:.6rem 0 .3rem; line-height:1.5; }
+  .cert-footer{ background:var(--cream); border-top:0.5px solid rgba(43,27,18,.12); padding:.9rem 1.4rem; display:flex; align-items:center; gap:12px; }
+  .cert-stamp{ width:46px; height:46px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
+  .cert-footer-text{ font-size:.72rem; color:var(--espresso-soft); line-height:1.5; flex:1; }
+  .cert-footer-text strong{ color:var(--espresso); font-weight:500; }
   .confetti-piece{ position:absolute; top:50%; left:50%; width:7px; height:10px; pointer-events:none; z-index:5;
     animation:confettiFall .9s ease-out forwards; }
   @keyframes confettiFall{ 0%{transform:translate(0,0) rotate(0deg); opacity:1;}

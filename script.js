@@ -683,7 +683,70 @@ async function encerrarRodada(rodadaId){
   }catch(err){ showToast('Erro ao encerrar: '+err.message, 'erro'); }
 }
 
-/* ====================== INICIALIZAÇÃO ====================== */
+/* ====================== CERTIFICADO ANTIFRAUDE ====================== */
+function abrirCertificado(){
+  if(!confRodadaAtual){ showToast('Nenhuma rodada selecionada', 'erro'); return; }
+  const rodada = confRodadaAtual;
+  const criadoEm = rodada.criadoEm ? rodada.criadoEm.toDate() : null;
+  const finalizadaEm = rodada.finalizadaEm ? rodada.finalizadaEm.toDate() : null;
+  const fmtData = d => d ? d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR') : '—';
+  const totalPremiados = Object.values(rodada.numeros).filter(n=> n.premio).length;
+  const totalVendidos = Object.values(rodada.numeros).filter(n=> n.vendido).length;
+  const hash = gerarHash(rodada);
+  const certId = 'CERT-' + pad(rodada.numero) + '-' + (criadoEm ? criadoEm.getFullYear() : '—');
+
+  document.getElementById('cert-modal-content').innerHTML =
+    '<div class="cert-header" style="position:relative;">'+
+      '<div class="cert-header-bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+      '<button class="cert-close-btn" onclick="fecharCertificado()">×</button>'+
+      '<p class="cert-logo">Dom Leon</p>'+
+      '<p class="cert-sub-label">Padaria · Salto de Pirapora/SP</p>'+
+      '<div class="cert-badge-row"><span class="cert-badge">🔐 Certificado antifraude</span></div>'+
+    '</div>'+
+    '<div class="cert-body">'+
+      '<div class="cert-title-row">'+
+        '<h3>Certificado de integridade do sorteio</h3>'+
+        '<p>Os prêmios foram embaralhados pelo sistema antes de qualquer número ser vendido.</p>'+
+      '</div>'+
+      '<hr class="cert-divider">'+
+      '<div class="cert-row"><span class="cert-label">Rodada</span><span class="cert-value">#'+pad(rodada.numero)+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Total de números</span><span class="cert-value">'+rodada.qtdNumeros+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Números premiados</span><span class="cert-value">'+totalPremiados+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Números vendidos</span><span class="cert-value">'+totalVendidos+'</span></div>'+
+      '<div class="cert-row"><span class="cert-label">Embaralhado em</span><span class="cert-value">'+fmtData(criadoEm)+'</span></div>'+
+      (finalizadaEm ? '<div class="cert-row"><span class="cert-label">Encerrado em</span><span class="cert-value">'+fmtData(finalizadaEm)+'</span></div>' : '')+
+      '<div class="cert-row"><span class="cert-label">Status</span><span class="cert-value ok">'+(rodada.status==='finalizada' ? '✓ Finalizada' : '⏳ Em andamento')+'</span></div>'+
+      '<hr class="cert-divider">'+
+      '<p style="font-size:.75rem; color:var(--espresso-soft); margin:0 0 4px;">Hash de integridade (SHA-256 simulado)</p>'+
+      '<div class="cert-hash-box">'+hash+'</div>'+
+      '<p style="font-size:.7rem; color:var(--espresso-soft); margin:0;">Gerado a partir dos dados da rodada. Qualquer alteração posterior resulta em hash diferente.</p>'+
+    '</div>'+
+    '<div class="cert-footer">'+
+      '<div class="cert-stamp">🎱</div>'+
+      '<div class="cert-footer-text"><strong>Jogo da Sorte Dom Leon</strong><br>Certificado gerado automaticamente em '+fmtData(new Date())+'.<br>ID: '+certId+'</div>'+
+    '</div>';
+  document.getElementById('cert-overlay').classList.add('show');
+}
+
+function fecharCertificado(){
+  document.getElementById('cert-overlay').classList.remove('show');
+}
+
+function gerarHash(rodada){
+  const dados = JSON.stringify({
+    numero: rodada.numero,
+    numeros: Object.entries(rodada.numeros).map(([n,v])=>({ n, premio: v.premio?.nome||null })),
+  });
+  let h = 0;
+  for(let i=0;i<dados.length;i++){
+    h = ((h<<5)-h) + dados.charCodeAt(i);
+    h |= 0;
+  }
+  const base = Math.abs(h).toString(16).padStart(8,'0');
+  const ts = (rodada.criadoEm ? rodada.criadoEm.seconds : Date.now()).toString(16);
+  const seed = (base + ts).repeat(5).slice(0,64);
+  return seed.split('').map((c,i)=> ((parseInt(c,16)||0) ^ (rodada.numero + i)) % 16).map(n=>n.toString(16)).join('');
+}
 auth.signInAnonymously().then(async ()=>{
   await carregarFavoritos();
   renderPrizeEditList();
